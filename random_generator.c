@@ -13,9 +13,14 @@
 */
 
 
-int random_generator(){
-    long long X = time(NULL);
-    int a = 2, b = 0, m = 20;
+long long random_generator(long long X){
+    int a = 2, b = 0, m = 30;
+    if(X == 0){
+	X = time(NULL);
+    }
+    else{
+	m = X + m;
+    }
     X = (X * a + b) % m;
     return X;
 }
