@@ -4,45 +4,49 @@
 #include "random_generator.h"
 #include <stdlib.h>
 
-
+// use struct when you need different memory allocation otherwise union will do the job 
 struct Cordinates {
-    int target[30];
-    int future[30];
-}
+    int * target;
+    int * future;
+};
 
 struct TrainTest {
     int train_X[30];
     int train_Y[30];
     int valid_X[30];
     int valid_Y[30];
-}
+};
 
 
-int* make_cordinates(){
-    int lenght_nums = 30;
-    int* cordinates = (int*)malloc(lenght_nums * sizeof(int));
-    int ran_num = 0; 
+typedef struct Cordinates cords;
 
-
-    for(int i = 0; i < lenght_nums; i++){
-	ran_num = random_generator(ran_num, 40, 0);
-	cordinates[i] = ran_num;
+cords make_cordinates(int arr_len){
+    cords init_cords;
+    init_cords.target = (int*)malloc(arr_len * sizeof(int));
+    init_cords.future = (int*)malloc(arr_len * sizeof(int));
+    int ran_num = 0;
+    for(int i = 0; i < arr_len; i++){
+	ran_num = random_generator(ran_num, 100, 20);
+	init_cords.target[i] = ran_num;
+	init_cords.future[i] = ran_num * init_cords.target[i];
+	printf("%i\n", ran_num);
     }
-    return cordinates;
-}
-
-int gradient_decent(){
-    int n, y_i, y_pred;
-    int x = 1\n * pow((y_i - y_pred),2);
-    w_n+1 = w_n - alpha * x;
+    return init_cords;
 }
 
 int main(){
-    int * X = make_cordinates();
-    int * Y = make_cordinates();
 
-    free(X);
-    free(Y);
+    cords test1 = make_cordinates(30);
+    printf("this is target - %i\n", test1.target[0]);
+    free(test1.target);
+    free(test1.future);
+    int n_iter;
+
+   /* int x = 1/n_iter * pow((y_i - y_pred),2);
+    */ 
+    /*w_n+1 = w_n - alpha * x;
+     */
+
     return 0;
 }
 
