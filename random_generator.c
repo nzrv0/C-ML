@@ -27,8 +27,8 @@ uint32_t pcg32_random_r(pcg32_random_t * rng) {
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
-uint32_t pcg32_random(){
-    return pcg32_random_r(&pcg32_global);
+uint32_t pcg32_random(uint64_t max, uint64_t min){
+    return pcg32_random_r(&pcg32_global) % (max - min);
 }
 
 
