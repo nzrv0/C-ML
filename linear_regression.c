@@ -17,7 +17,6 @@ struct TrainTest {
     int valid_Y[30];
 };
 
-
 typedef struct Cordinates cords;
 
 cords make_cordinates(int arr_len){
@@ -25,11 +24,12 @@ cords make_cordinates(int arr_len){
     init_cords.target = (int*)malloc(arr_len * sizeof(int));
     init_cords.future = (int*)malloc(arr_len * sizeof(int));
     int ran_num = 0;
+    pcg32_srandom(40u, 42u);
     for(int i = 0; i < arr_len; i++){
-	ran_num = random_generator(ran_num, 100, 20);
+	ran_num = pcg32_random();
 	init_cords.target[i] = ran_num;
 	init_cords.future[i] = ran_num * init_cords.target[i];
-	printf("%i\n", ran_num);
+	printf("%i\n", ran_num % (20));
     }
     return init_cords;
 }
