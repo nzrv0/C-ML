@@ -3,31 +3,31 @@
 #include <time.h>
 #include "random_generator.h"
 #include <inttypes.h>
+#include <stdlib.h>
 
 // use struct when you need different memory allocation otherwise union will do the job 
 struct Cordinates {
-    int * target;
-    int * future;
+    uint64_t * target;
+    uint64_t * future;
 };
-union Train {
-    uint64_t * X_train;
-    uint64_t * y_valid;
-};
-union Test {
-    uint64_t * X_valid;
-    uint64_t * y_valid;
+struct Split {
+    uint64_t * X;
+    uint64_t * y;
 };
 struct TrainTest {
-    union Train train;
-    union Test test;
+    struct Split train;
+    struct Split test;
 };
 
 typedef struct Cordinates cords;
 typedef struct TrainTest train_test;
 cords make_cordinates(int arr_len){
     cords init_cords;
-    init_cords.target = (int*)malloc(arr_len * sizeof(int));
-    init_cords.future = (int*)malloc(arr_len * sizeof(int));
+    int alloc_size = arr_len * sizeof(uint64_t);
+
+    init_cords.target = (uint64_t*)malloc(alloc_size);
+    init_cords.future = (uint64_t*)malloc(alloc_size);
+
     uint64_t ran_num = 0;
     pcg32_srandom(40u, 42u);
     for(int i = 0; i < arr_len; i++){
@@ -39,19 +39,32 @@ cords make_cordinates(int arr_len){
     return init_cords;
 }
 
-train_test split_data(int * target, int *future){
-    train_test train_test_split;
-    int target_len = sizeof(*target) / target[0];
+train_test * split_data(uint64_t * target, uint64_t *future){
+    train_test * train_test_split = (train_test *)malloc(sizeof(train_test));
+    int target_len = sizeof(*target) / sizeof(target[0]);
     int future_len = sizeof(*target) / target[0];
-    train_test_split.train = (train_test *)malloc(target_len*sizeof(*target));
-    train_test_split.test = (union Test*)malloc(future_len*sizeof(*future));
-    
+
+    int target_portion = (40 * 80) / 100;
+
+    train_test_split->train.X = (uint64_t *)malloc(target_portion*sizeof(uint64_t));
+    train_test_split->train.y = (uint64_t *)malloc(target_portion*sizeof(uint64_t));
+
+    for(int i = 0; i < target_portion; i++){
+	train_test_split->train.X[i] = target[i];
+	train_test_split->train.y[i] = future[i];
+    }
+
     return train_test_split;
 }
 
 int main(){
     cords test1 = make_cordinates(40);
-    split_data(test1.target, test1.future);
+    train_test* test2 = split_data(test1.target, test1.future);
+
+    free(test2->train.X);
+    free(test2->train.y);
+    free(test2);
+
     free(test1.target);
     free(test1.future);
     int n_iter;
