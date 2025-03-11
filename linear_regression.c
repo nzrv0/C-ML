@@ -14,16 +14,15 @@ struct Split {
     uint64_t * X;
     uint64_t * y;
 };
+
 struct TrainTest {
     struct Split train;
     struct Split test;
 };
 
 typedef struct Cordinates cords;
-typedef struct TrainTest train_test;
-cords make_cordinates(int arr_len){
+cords make_cordinates(int arr_len, int alloc_size){
     cords init_cords;
-    int alloc_size = arr_len * sizeof(uint64_t);
 
     init_cords.target = (uint64_t*)malloc(alloc_size);
     init_cords.future = (uint64_t*)malloc(alloc_size);
@@ -34,17 +33,13 @@ cords make_cordinates(int arr_len){
 	ran_num = pcg32_random(40, 20);
 	init_cords.target[i] = ran_num;
 	init_cords.future[i] = ran_num * init_cords.target[i];
-	printf("%i\n", ran_num);
     }
     return init_cords;
 }
 
-train_test * split_data(uint64_t * target, uint64_t *future){
+typedef struct TrainTest train_test;
+train_test * split_data(uint64_t * target, uint64_t *future,uint64_t target_portion, uint64_t test_portion){
     train_test * train_test_split = (train_test *)malloc(sizeof(train_test));
-    int target_len = sizeof(*target) / sizeof(target[0]);
-    int future_len = sizeof(*target) / target[0];
-
-    int target_portion = (40 * 80) / 100;
 
     train_test_split->train.X = (uint64_t *)malloc(target_portion*sizeof(uint64_t));
     train_test_split->train.y = (uint64_t *)malloc(target_portion*sizeof(uint64_t));
@@ -54,27 +49,68 @@ train_test * split_data(uint64_t * target, uint64_t *future){
 	train_test_split->train.y[i] = future[i];
     }
 
+    train_test_split->test.X = (uint64_t *)malloc(test_portion*sizeof(uint64_t));
+    train_test_split->test.y = (uint64_t *)malloc(test_portion*sizeof(uint64_t));
+
+    for(int i = 0; i < test_portion; i++){
+	train_test_split->test.X[i] = target[i];
+	train_test_split->test.y[i] = future[i];
+    }
+
     return train_test_split;
 }
 
+double * gradient_decent(uint64_t *x, uint64_t *y, uint64_t size){
+    // J(w, b) = 1/m*sum(y-y_pred)**2
+    // w_n + 1 = w_n - alpha * d(J(w, b))/ dw
+    uint64_t init_weight = pcg32_random(40, 20);
+    float learn_rate = 0.001;
+    uint64_t len_num = size; 
+    double theta = init_weight;
+    double * y_pred = (double *)malloc(len_num * sizeof(double));
+    double sum = 0;
+    for(int i = 0;i < len_num; i++){
+	for (int i = 0;i < len_num;i++){
+	    y_pred[i] = theta * x[i]; 
+	    sum = sum + (y_pred[i] - y[i])*x[i];
+	}
+	printf("Sum - %f\n", sum);
+	double cost_w = (2*sum)/len_num;
+	printf("Coast funciton - %f\n", cost_w);
+	theta = theta - learn_rate * cost_w;
+	printf("last weight - %f\n", theta);
+    }
+    return y_pred; 
+}
+
+uint64_t learning_rate(){return 0;}
+
 int main(){
-    cords test1 = make_cordinates(40);
-    train_test* test2 = split_data(test1.target, test1.future);
+    uint64_t arr_len = 40;
+    uint64_t alloc_size = arr_len * sizeof(uint64_t);
+     
+    cords test1 = make_cordinates(arr_len, alloc_size);
+
+    uint64_t target_len = alloc_size / sizeof(test1.target[0]);
+    uint64_t future_len = alloc_size / sizeof(test1.future[0]);
+    uint64_t target_portion = (target_len * 80) / 100;
+    uint64_t test_portion = (target_len - target_portion);
+
+    train_test* test2 = split_data(test1.target, test1.future, target_portion, test_portion);
+    double * y_pred = gradient_decent(test2->train.X, test2->train.y, target_portion);
+    
+
+    free(y_pred);
 
     free(test2->train.X);
     free(test2->train.y);
+    free(test2->test.X);
+    free(test2->test.y);
     free(test2);
 
     free(test1.target);
     free(test1.future);
-    int n_iter;
     
-   /* int x = 1/n_iter * pow((y_i - y_pred),2);
-    */ 
-    /*w_n+1 = w_n - alpha * x;
-     */
-
     return 0;
 }
-
 
