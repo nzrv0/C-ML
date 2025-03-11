@@ -59,12 +59,12 @@ train_test * split_data(uint64_t * target, uint64_t *future,uint64_t target_port
 
     return train_test_split;
 }
-
+double learning_rate(float learn_rate, int iter);
 double * gradient_decent(uint64_t *x, uint64_t *y, uint64_t size){
     // J(w, b) = 1/m*sum(y-y_pred)**2
     // w_n + 1 = w_n - alpha * d(J(w, b))/ dw
     uint64_t init_weight = pcg32_random(40, 20);
-    float learn_rate = 0.001;
+    double learn_rate = 0.002;
     uint64_t len_num = size; 
     double theta = init_weight;
     double * y_pred = (double *)malloc(len_num * sizeof(double));
@@ -72,18 +72,24 @@ double * gradient_decent(uint64_t *x, uint64_t *y, uint64_t size){
     for(int i = 0;i < len_num; i++){
 	for (int i = 0;i < len_num;i++){
 	    y_pred[i] = theta * x[i]; 
-	    sum = sum + (y_pred[i] - y[i])*x[i];
+	    sum += -(y[i] - y_pred[i])*x[i];
 	}
 	printf("Sum - %f\n", sum);
 	double cost_w = (2*sum)/len_num;
 	printf("Coast funciton - %f\n", cost_w);
 	theta = theta - learn_rate * cost_w;
+	learn_rate = learning_rate(learn_rate, i);
 	printf("last weight - %f\n", theta);
     }
     return y_pred; 
 }
 
-uint64_t learning_rate(){return 0;}
+double learning_rate(float learn_rate, int iter){
+    float decay = 0.01;
+    double new_rate = learn_rate/(1 + decay * iter);
+    printf("%f\n", new_rate);
+    return new_rate;
+}
 
 int main(){
     uint64_t arr_len = 40;
