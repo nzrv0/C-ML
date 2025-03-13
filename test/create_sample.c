@@ -48,38 +48,70 @@ float **product(float **matrix_a, int rows_a, int cols_a, float **matrix_b, int 
     return new_matrix;
 }
 float **minor(int rows, int cols, int n, float **M);
-float determinant(float **M, int rows, int cols)
+float determinant(float **M, int cols)
 {
     // if (rows != cols)
     // {
     //     printf("You should use square matrix rows - %i not matching to cols - %i", rows, cols);
     //     exit(1);
     // }
+
     if (cols == 2)
     {
         return (M[0][0] * M[1][1]) - (M[0][1] * M[1][0]);
     }
+
+    // 5x5
+    // 4x4
+    // 3x3
     float det = 0;
+    float resoult = 0;
+    int minor_cols = cols;
+    float cofactor = 1;
+    int k = 0, l = 0;
+
     for (int i = 0; i < cols; i++)
     {
-        float **m = minor(0, i, cols, M);
-        det += pow(-1, i) * M[0][i] * determinant(m, rows, cols - 1);
-        clear(cols, m);
+
+        minor_cols -= 1;
+        // 4, 3, 2
+        cofactor *= pow(-1, i) * M[i][k];
+        if (minor_cols == 2)
+        {
+            for (int j = 0; j <= minor_cols; j++)
+            {
+                float **m = minor(j, i, minor_cols, M);
+                det = (m[0][0] * m[1][1] - m[0][1] * m[1][0]);
+                cofactor *= det * M[i][k];
+                clear(minor_cols, m);
+            }
+        }
     }
-    return det;
+    resoult += cofactor;
+    cofactor = 1;
+    minor_cols = cols;
+    // for (int i = 0; i < cols; i++)
+    // {
+    //     float **m = minor(0, i, cols, M);
+    //     printf("determinatn - %f, minor matrix size - %i, index - %i \n", det, cols, i);
+    //     det += pow((-1), i) * M[0][i] * determinant(m, cols - 1);
+    //     clear(cols, m);
+    // }
+    return resoult;
 }
 
-float **minor(int rows, int cols, int n, float **M)
+float **minor(int rows, int cols, int size, float **M)
 {
-    int k = 0, l = 0;
-    int size = n - 1;
+    int k = 0;
+    int l = 0;
+    // size = size - 1;
     float **m = matrix(size, size);
 
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < size; i++)
     {
-        for (int j = 0; i < n; i++)
+        for (int j = 0; j < size; j++)
         {
-            if (i != rows && n != j)
+            if (i != rows && j != cols)
             {
                 m[k][l] = M[i][j];
                 l++;
@@ -94,7 +126,7 @@ float **minor(int rows, int cols, int n, float **M)
 
 int main()
 {
-    int rows_a = 4, cols_a = 5;
+    int rows_a = 5, cols_a = 5;
     int rows_b = 5, cols_b = 5;
 
     float **matrix_a = matrix(rows_a, cols_a);
@@ -104,7 +136,9 @@ int main()
         for (int j = 0; j < cols_a; j++)
         {
             matrix_a[i][j] = rows_a * i + j + 1;
+            printf("matrix_a %f ", matrix_a[i][j]);
         }
+        printf("\n");
     }
     for (int i = 0; i < rows_b; i++)
     {
@@ -115,15 +149,16 @@ int main()
     }
 
     float **resoult = product(matrix_a, rows_a, cols_a, matrix_b, rows_b, cols_b);
-    for (int i = 0; i < rows_a; i++)
-    {
-        for (int j = 0; j < cols_b; j++)
-        {
-            printf("%f ", resoult[i][j]);
-        }
-        printf("\n");
-    }
-    float det = determinant(matrix_a, rows_a, cols_a);
+    // for (int i = 0; i < rows_a; i++)
+    // {
+    //     for (int j = 0; j < cols_b; j++)
+    //     {
+    //         printf("%f ", resoult[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+    float det = determinant(matrix_a, cols_a);
+    printf("reosult determinant %f\n", det);
     clear(rows_a, matrix_a);
     clear(rows_b, matrix_b);
     clear(rows_a, resoult);
