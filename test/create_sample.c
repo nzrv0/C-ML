@@ -60,44 +60,16 @@ float determinant(float **M, int cols)
     {
         return (M[0][0] * M[1][1]) - (M[0][1] * M[1][0]);
     }
-
-    // 5x5
-    // 4x4
-    // 3x3
-    float det = 0;
-    float resoult = 0;
-    int minor_cols = cols;
-    float cofactor = 1;
-    int k = 0, l = 0;
+    float det;
 
     for (int i = 0; i < cols; i++)
     {
-
-        minor_cols -= 1;
-        // 4, 3, 2
-        cofactor *= pow(-1, i) * M[i][k];
-        if (minor_cols == 2)
-        {
-            for (int j = 0; j <= minor_cols; j++)
-            {
-                float **m = minor(j, i, minor_cols, M);
-                det = (m[0][0] * m[1][1] - m[0][1] * m[1][0]);
-                cofactor *= det * M[i][k];
-                clear(minor_cols, m);
-            }
-        }
+        float **m = minor(0, i, cols, M);
+        printf("determinatn - %f, minor matrix size - %i, index - %i \n", det, cols, i);
+        det += pow((-1), i) * M[0][i] * determinant(m, cols - 1);
+        clear(cols, m);
     }
-    resoult += cofactor;
-    cofactor = 1;
-    minor_cols = cols;
-    // for (int i = 0; i < cols; i++)
-    // {
-    //     float **m = minor(0, i, cols, M);
-    //     printf("determinatn - %f, minor matrix size - %i, index - %i \n", det, cols, i);
-    //     det += pow((-1), i) * M[0][i] * determinant(m, cols - 1);
-    //     clear(cols, m);
-    // }
-    return resoult;
+    return det;
 }
 
 float **minor(int rows, int cols, int size, float **M)
